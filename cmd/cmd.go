@@ -55,8 +55,8 @@ func initConfig() {
 		configFolder := path.Join(home, ".config", "bitbucketServer2Gitea")
 		viper.AddConfigPath(configFolder)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".codegpt")
-		cfgFile = path.Join(configFolder, ".codegpt.yaml")
+		viper.SetConfigName(".config")
+		cfgFile = path.Join(configFolder, ".config.yaml")
 
 		if !file.IsDir(configFolder) {
 			if err := os.MkdirAll(configFolder, os.ModePerm); err != nil {
