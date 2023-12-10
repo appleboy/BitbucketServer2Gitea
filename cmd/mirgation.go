@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
-	"log"
 	"net/http"
 	"time"
 
@@ -60,14 +59,11 @@ func (m *migration) initGitea() error {
 	}
 
 	if m.giteaClient == nil {
-		if client, err := gitea.NewClient(
-			m.giteaServer,
-			opts...,
-		); err != nil {
-			log.Fatal(err)
-		} else {
-			m.giteaClient = client
+		client, err := gitea.NewClient(m.giteaServer, opts...)
+		if err != nil {
+			return err
 		}
+		m.giteaClient = client
 	}
 	return nil
 }
