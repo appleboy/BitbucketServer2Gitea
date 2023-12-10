@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"net/http"
+	"strings"
 
 	"code.gitea.io/sdk/gitea"
 	bitbucketv1 "github.com/gfleury/go-bitbucket-v1"
@@ -27,11 +28,13 @@ func (m *migration) initBitbucket() error {
 		return errors.New("mission bitbucket server or token")
 	}
 
+	m.bitbucketServer = strings.TrimRight(m.bitbucketServer, "/")
+
 	ctx := context.WithValue(m.ctx, bitbucketv1.ContextAccessToken, m.bitbucketToken)
 	if m.bitbucketClient == nil {
 		m.bitbucketClient = bitbucketv1.NewAPIClient(
 			ctx,
-			bitbucketv1.NewConfiguration(m.bitbucketServer),
+			bitbucketv1.NewConfiguration(m.bitbucketServer+"/rest"),
 		)
 	}
 	return nil
