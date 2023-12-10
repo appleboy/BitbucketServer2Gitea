@@ -23,12 +23,23 @@ var rootCmd = &cobra.Command{
 var (
 	cfgFile  string
 	replacer = strings.NewReplacer("-", "_", ".", "_")
+
+	bitbucketUsername string
+	bitbucketToken    string
+	bitbucketServer   string
+	giteaToken        string
+	giteaServer       string
 )
 
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/codegpt/.codegpt.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/bitbucketServer2Gitea/.config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&bitbucketUsername, "bitbucket-username", "", "username for Bitbucket API access")
+	rootCmd.PersistentFlags().StringVar(&bitbucketToken, "bitbucket-token", "", "access token for Bitbucket API access")
+	rootCmd.PersistentFlags().StringVar(&bitbucketServer, "bitbucket-server", "", "Bitbucket server URL with a trailing slash (https://stash.example.com/rest/)")
+	rootCmd.PersistentFlags().StringVar(&giteaToken, "gitea-token", "", "token for Gitea API access")
+	rootCmd.PersistentFlags().StringVar(&giteaServer, "gitea-server", "", "Gitea server URL (https://gitea.example.com/)")
 	rootCmd.AddCommand(versionCmd)
 
 	// hide completion command
