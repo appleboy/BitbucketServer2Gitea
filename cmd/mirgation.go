@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"net/http"
-	"time"
 
 	"code.gitea.io/sdk/gitea"
 	bitbucketv1 "github.com/gfleury/go-bitbucket-v1"
@@ -13,6 +12,7 @@ import (
 )
 
 type migration struct {
+	ctx             context.Context
 	bitbucketServer string
 	bitbucketToken  string
 	bitbucketClient *bitbucketv1.APIClient
@@ -27,9 +27,7 @@ func (m *migration) initBitbucket() error {
 		return errors.New("mission bitbucket server or token")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 6000*time.Millisecond)
-	ctx = context.WithValue(ctx, bitbucketv1.ContextAccessToken, m.bitbucketToken)
-	defer cancel()
+	ctx := context.WithValue(m.ctx, bitbucketv1.ContextAccessToken, m.bitbucketToken)
 	if m.bitbucketClient == nil {
 		m.bitbucketClient = bitbucketv1.NewAPIClient(
 			ctx,
@@ -73,8 +71,9 @@ func (m *migration) initGitea() error {
 // with values from the viper configuration.
 // It also initializes the bitbucket and gitea clients.
 // Returns a pointer to the migration struct and any error encountered during initialization.
-func NewMigration() (*migration, error) {
+func NewMigration(ctx context.Context) (*migration, error) {
 	m := &migration{
+		ctx:             ctx,
 		bitbucketServer: viper.GetString("bitbucket.server"),
 		bitbucketToken:  viper.GetString("bitbucket.token"),
 		giteaServer:     viper.GetString("gitea.server"),
