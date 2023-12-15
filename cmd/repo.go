@@ -72,7 +72,7 @@ var repoCmd = &cobra.Command{
 			if !org.Public {
 				visible = gitea.VisibleTypePrivate
 			}
-			newOrg, reponse, err = m.giteaClient.CreateOrg(gitea.CreateOrgOption{
+			newOrg, _, err = m.giteaClient.CreateOrg(gitea.CreateOrgOption{
 				Name:        targetOwner,
 				Description: org.Description,
 				Visibility:  visible,
@@ -88,7 +88,7 @@ var repoCmd = &cobra.Command{
 			targetRepo = repo.Name
 		}
 
-		newRepo, reponse, err := m.giteaClient.MigrateRepo(gitea.MigrateRepoOption{
+		newRepo, _, err := m.giteaClient.MigrateRepo(gitea.MigrateRepoOption{
 			RepoName:     targetRepo,
 			RepoOwner:    targetOwner,
 			CloneAddr:    repo.Links.Clone[1].Href,
