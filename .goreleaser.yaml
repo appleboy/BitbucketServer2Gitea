@@ -9,10 +9,8 @@ builds:
       - darwin
       - linux
       - windows
-      - freebsd
     goarch:
       - amd64
-      - arm
       - arm64
     goarm:
       - "5"
