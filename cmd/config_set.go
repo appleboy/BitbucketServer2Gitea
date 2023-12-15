@@ -10,6 +10,7 @@ func init() {
 	configCmd.AddCommand(configSetCmd)
 	configSetCmd.Flags().StringP("bitbucket-token", "", "", "access token for Bitbucket API access")
 	configSetCmd.Flags().StringP("bitbucket-server", "", "", "Bitbucket server URL with a trailing slash (https://stash.example.com/rest/)")
+	configSetCmd.Flags().StringP("gitea-username", "", "", "username for Gitea API access")
 	configSetCmd.Flags().StringP("gitea-token", "", "", "token for Gitea API access")
 	configSetCmd.Flags().StringP("gitea-server", "", "", "Gitea server URL (https://gitea.example.com/)")
 	configSetCmd.Flags().BoolP("gitea-skip-verify", "", false, "Skip SSL verification for Gitea server")

@@ -13,14 +13,15 @@ import (
 )
 
 type migration struct {
-	ctx             context.Context
-	bitbucketServer string
-	bitbucketToken  string
-	bitbucketClient *bitbucketv1.APIClient
-	giteaServer     string
-	giteaToken      string
-	giteaSkipVerify bool
-	giteaClient     *gitea.Client
+	ctx               context.Context
+	bitbucketServer   string
+	bitbucketToken    string
+	bitbucketUsername string
+	bitbucketClient   *bitbucketv1.APIClient
+	giteaServer       string
+	giteaToken        string
+	giteaSkipVerify   bool
+	giteaClient       *gitea.Client
 }
 
 func (m *migration) initBitbucket() error {
@@ -76,12 +77,13 @@ func (m *migration) initGitea() error {
 // Returns a pointer to the migration struct and any error encountered during initialization.
 func NewMigration(ctx context.Context) (*migration, error) {
 	m := &migration{
-		ctx:             ctx,
-		bitbucketServer: viper.GetString("bitbucket.server"),
-		bitbucketToken:  viper.GetString("bitbucket.token"),
-		giteaServer:     viper.GetString("gitea.server"),
-		giteaSkipVerify: viper.GetBool("gitea.skip-verify"),
-		giteaToken:      viper.GetString("gitea.token"),
+		ctx:               ctx,
+		bitbucketServer:   viper.GetString("bitbucket.server"),
+		bitbucketUsername: viper.GetString("bitbucket.username"),
+		bitbucketToken:    viper.GetString("bitbucket.token"),
+		giteaServer:       viper.GetString("gitea.server"),
+		giteaSkipVerify:   viper.GetBool("gitea.skip-verify"),
+		giteaToken:        viper.GetString("gitea.token"),
 	}
 
 	if err := m.initBitbucket(); err != nil {
