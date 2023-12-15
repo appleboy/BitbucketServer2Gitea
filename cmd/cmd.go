@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"path"
 	"strings"
@@ -14,9 +14,10 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Short:        "A command line tool build with Golang to migrate a Bitbucket to Gitea.",
-	SilenceUsage: true,
-	Args:         cobra.MaximumNArgs(1),
+	Short:         "A command line tool build with Golang to migrate a Bitbucket to Gitea.",
+	SilenceUsage:  true,
+	Args:          cobra.MaximumNArgs(1),
+	SilenceErrors: true,
 }
 
 // Used for flags.
@@ -31,6 +32,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/bitbucketServer2Gitea/.config.yaml)")
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(repoCmd)
 
 	// hide completion command
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
@@ -78,13 +80,15 @@ func initConfig() {
 			}
 		} else {
 			// Config file was found but another error was produced
-			fmt.Fprintln(os.Stderr, err)
+			slog.Error("read config error", "msg", err)
 		}
 	}
 }
 
-func Execute(ctx context.Context) {
+func Execute(ctx context.Context) error {
 	if _, err := rootCmd.ExecuteContextC(ctx); err != nil {
-		os.Exit(1)
+		return err
 	}
+
+	return nil
 }
