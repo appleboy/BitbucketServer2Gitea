@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
@@ -29,5 +30,7 @@ func withContextFunc(ctx context.Context, f func()) context.Context {
 
 func main() {
 	ctx := withContextFunc(context.Background(), func() {})
-	cmd.Execute(ctx)
+	if err := cmd.Execute(ctx); err != nil {
+		slog.Error("migration error", "msg", err)
+	}
 }
