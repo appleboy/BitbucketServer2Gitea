@@ -127,3 +127,23 @@ func (b *bitbucket) GetUsersFromGroup(g string) ([]bitbucketv1.User, error) {
 
 	return bitbucketv1.GetUsersResponse(response)
 }
+
+// GetProject get project
+func (b *bitbucket) GetProject(projectKey string) (bitbucketv1.Project, error) {
+	response, err := b.client.DefaultApi.GetProject(projectKey)
+	if err != nil {
+		return bitbucketv1.Project{}, err
+	}
+
+	return bitbucketv1.GetRrojectResponse(response)
+}
+
+// GetRepo get repo
+func (b *bitbucket) GetRepo(projectKey, repoSlug string) (bitbucketv1.Repository, error) {
+	response, err := b.client.DefaultApi.GetRepository(projectKey, repoSlug)
+	if err != nil {
+		return bitbucketv1.Repository{}, err
+	}
+
+	return bitbucketv1.GetRepositoryResponse(response)
+}

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"code.gitea.io/sdk/gitea"
-	bitbucketv1 "github.com/gfleury/go-bitbucket-v1"
 	"github.com/spf13/cobra"
 )
 
@@ -42,12 +41,7 @@ var repoCmd = &cobra.Command{
 		}
 
 		// check bitbucket project exist
-		response, err := m.bitbucket.client.DefaultApi.GetProject(projectKey)
-		if err != nil {
-			return err
-		}
-
-		org, err := bitbucketv1.GetRepositoryResponse(response)
+		org, err := m.bitbucket.GetProject(projectKey)
 		if err != nil {
 			return err
 		}
@@ -91,12 +85,7 @@ var repoCmd = &cobra.Command{
 			}
 		}
 
-		response, err = m.bitbucket.client.DefaultApi.GetRepository(projectKey, repoSlug)
-		if err != nil {
-			return err
-		}
-
-		repo, err := bitbucketv1.GetRepositoryResponse(response)
+		repo, err := m.bitbucket.GetRepo(projectKey, repoSlug)
 		if err != nil {
 			return err
 		}
