@@ -51,7 +51,26 @@ var repoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		slog.Info("check bitbucket project success", "name", org.Name)
+		slog.Info("check project success", "name", org.Name)
+
+		// check project user permission
+		response, err = m.bitbucketClient.DefaultApi.GetUsersWithAnyPermission_23(projectKey, map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+
+		users, err := bitbucketv1.GetUsersPermissionResponse(response)
+		if err != nil {
+			return err
+		}
+
+		for _, user := range users {
+			slog.Info("project permission",
+				"display", user.User.DisplayName,
+				"account", user.User.Name,
+				"permission", user.Permission,
+			)
+		}
 
 		response, err = m.bitbucketClient.DefaultApi.GetRepository(projectKey, repoSlug)
 		if err != nil {
@@ -62,7 +81,26 @@ var repoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		slog.Info("check bitbucket repo success", "name", repo.Name)
+		slog.Info("check repo success", "name", repo.Name)
+
+		// check repo user permission
+		response, err = m.bitbucketClient.DefaultApi.GetUsersWithAnyPermission_24(projectKey, repoSlug, map[string]interface{}{})
+		if err != nil {
+			return err
+		}
+
+		users, err = bitbucketv1.GetUsersPermissionResponse(response)
+		if err != nil {
+			return err
+		}
+
+		for _, user := range users {
+			slog.Info("repo permission",
+				"display", user.User.DisplayName,
+				"account", user.User.Name,
+				"permission", user.Permission,
+			)
+		}
 
 		// check gitea owner exist
 		if targetOwner == "" {
