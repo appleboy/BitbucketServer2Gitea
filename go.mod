@@ -43,3 +43,5 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/gfleury/go-bitbucket-v1 => github.com/appleboy/go-bitbucket-v1 v0.0.0-20231216080418-bafb48ca1464
