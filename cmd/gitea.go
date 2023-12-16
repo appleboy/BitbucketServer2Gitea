@@ -97,3 +97,32 @@ func (g *gitea) CreateAndGetOrg(opts CreateOrgOption) (*gsdk.Organization, error
 
 	return newOrg, nil
 }
+
+// MigrateRepoOption migrate repository option
+type MigrateRepoOption struct {
+	RepoName     string
+	RepoOwner    string
+	CloneAddr    string
+	Private      bool
+	Description  string
+	AuthUsername string
+	AuthPassword string
+}
+
+// MigrateRepo migrate repository
+func (g *gitea) MigrateRepo(opts MigrateRepoOption) (*gsdk.Repository, error) {
+	newRepo, _, err := g.client.MigrateRepo(gsdk.MigrateRepoOption{
+		RepoName:     opts.RepoName,
+		RepoOwner:    opts.RepoOwner,
+		CloneAddr:    opts.CloneAddr,
+		Private:      opts.Private,
+		Description:  opts.Description,
+		AuthUsername: opts.AuthUsername,
+		AuthPassword: opts.AuthPassword,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return newRepo, nil
+}

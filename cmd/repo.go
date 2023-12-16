@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"time"
 
-	gsdk "code.gitea.io/sdk/gitea"
 	"github.com/spf13/cobra"
 )
 
@@ -149,7 +148,7 @@ var repoCmd = &cobra.Command{
 		}
 
 		slog.Info("start migrate repo", "name", targetRepo, "owner", targetOwner)
-		newRepo, _, err := m.gitea.client.MigrateRepo(gsdk.MigrateRepoOption{
+		newRepo, err := m.gitea.MigrateRepo(MigrateRepoOption{
 			RepoName:     targetRepo,
 			RepoOwner:    targetOwner,
 			CloneAddr:    repo.Links.Clone[1].Href,
