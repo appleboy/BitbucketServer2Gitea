@@ -13,3 +13,10 @@ bitbucketServer2Gitea config set bitbucket.token xxxxxxxxxxxxxx
 bitbucketServer2Gitea config set gitea.server https://stash.example.com
 bitbucketServer2Gitea config set gitea.token xxxxxxxxxxxxxx
 ```
+
+## Migration Single Repository
+
+```bash
+bitbucketServer2Gitea repo --project-key AIA --repo-slug test \
+  --target-owner admin --target-repo test
+```
