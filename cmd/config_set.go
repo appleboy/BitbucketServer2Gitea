@@ -13,7 +13,7 @@ func init() {
 	configSetCmd.Flags().StringP("bitbucket-username", "", "", "username for Bitbucket API access")
 	configSetCmd.Flags().StringP("gitea-token", "", "", "token for Gitea API access")
 	configSetCmd.Flags().StringP("gitea-server", "", "", "Gitea server URL (https://gitea.example.com/)")
-	configSetCmd.Flags().BoolP("gitea-skip-verify", "", false, "Skip SSL verification for Gitea server")
+	configSetCmd.Flags().BoolP("gitea-skip-verify", "", true, "Skip SSL verification for Gitea server")
 	_ = viper.BindPFlag("bitbucket.token", configSetCmd.Flags().Lookup("bitbucket-token"))
 	_ = viper.BindPFlag("bitbucket.server", configSetCmd.Flags().Lookup("bitbucket-server"))
 	_ = viper.BindPFlag("bitbucket.username", configSetCmd.Flags().Lookup("bitbucket-username"))

@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"code.gitea.io/sdk/gitea"
+	gsdk "code.gitea.io/sdk/gitea"
 	"github.com/spf13/cobra"
 )
 
@@ -133,13 +133,13 @@ var repoCmd = &cobra.Command{
 		if targetOwner == "" {
 			targetOwner = org.Name
 		}
-		newOrg, reponse, err := m.giteaClient.GetOrg(targetOwner)
+		newOrg, reponse, err := m.gitea.client.GetOrg(targetOwner)
 		if reponse.StatusCode == http.StatusNotFound {
-			visible := gitea.VisibleTypePublic
+			visible := gsdk.VisibleTypePublic
 			if !org.Public {
-				visible = gitea.VisibleTypePrivate
+				visible = gsdk.VisibleTypePrivate
 			}
-			newOrg, _, err = m.giteaClient.CreateOrg(gitea.CreateOrgOption{
+			newOrg, _, err = m.gitea.client.CreateOrg(gsdk.CreateOrgOption{
 				Name:        targetOwner,
 				Description: org.Description,
 				Visibility:  visible,
@@ -157,7 +157,7 @@ var repoCmd = &cobra.Command{
 		}
 
 		slog.Info("start migrate repo", "name", targetRepo, "owner", targetOwner)
-		newRepo, _, err := m.giteaClient.MigrateRepo(gitea.MigrateRepoOption{
+		newRepo, _, err := m.gitea.client.MigrateRepo(gsdk.MigrateRepoOption{
 			RepoName:     targetRepo,
 			RepoOwner:    targetOwner,
 			CloneAddr:    repo.Links.Clone[1].Href,
