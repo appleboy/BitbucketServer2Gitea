@@ -51,6 +51,7 @@ var repoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		slog.Info("check bitbucket project success", "name", org.Name)
 
 		response, err = m.bitbucketClient.DefaultApi.GetRepository(projectKey, repoSlug)
 		if err != nil {
@@ -61,6 +62,7 @@ var repoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		slog.Info("check bitbucket repo success", "name", repo.Name)
 
 		// check gitea owner exist
 		if targetOwner == "" {
@@ -80,6 +82,7 @@ var repoCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
+			slog.Info("create new org success", "name", newOrg.UserName)
 		} else if err != nil {
 			return err
 		}
@@ -88,6 +91,7 @@ var repoCmd = &cobra.Command{
 			targetRepo = repo.Name
 		}
 
+		slog.Info("start migrate repo", "name", targetRepo, "owner", targetOwner)
 		newRepo, _, err := m.giteaClient.MigrateRepo(gitea.MigrateRepoOption{
 			RepoName:     targetRepo,
 			RepoOwner:    targetOwner,
@@ -100,7 +104,6 @@ var repoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-
 		slog.Info("migrate repo success", "name", newRepo.Name, "owner", newOrg.UserName)
 
 		return nil
