@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"net/http"
 	"time"
 
 	gsdk "code.gitea.io/sdk/gitea"
@@ -133,27 +132,20 @@ var repoCmd = &cobra.Command{
 		if targetOwner == "" {
 			targetOwner = org.Name
 		}
-		newOrg, reponse, err := m.gitea.client.GetOrg(targetOwner)
-		if reponse.StatusCode == http.StatusNotFound {
-			visible := gsdk.VisibleTypePublic
-			if !org.Public {
-				visible = gsdk.VisibleTypePrivate
-			}
-			newOrg, _, err = m.gitea.client.CreateOrg(gsdk.CreateOrgOption{
-				Name:        targetOwner,
-				Description: org.Description,
-				Visibility:  visible,
-			})
-			if err != nil {
-				return err
-			}
-			slog.Info("create new org success", "name", newOrg.UserName)
-		} else if err != nil {
-			return err
-		}
 
+		// check gitea repository exist
 		if targetRepo == "" {
 			targetRepo = repo.Name
+		}
+
+		slog.Info("get or create organization", "name", targetOwner)
+		newOrg, err := m.gitea.CreateAndGetOrg(CreateOrgOption{
+			Name:        targetOwner,
+			Description: org.Description,
+			Visibility:  org.Public,
+		})
+		if err != nil {
+			return err
 		}
 
 		slog.Info("start migrate repo", "name", targetRepo, "owner", targetOwner)

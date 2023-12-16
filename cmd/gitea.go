@@ -67,3 +67,33 @@ func (g *gitea) init() error {
 
 	return nil
 }
+
+// CreateOrgOption create organization option
+type CreateOrgOption struct {
+	Name        string
+	Description string
+	Visibility  bool
+}
+
+// CreateAndGetOrg create and get organization
+func (g *gitea) CreateAndGetOrg(opts CreateOrgOption) (*gsdk.Organization, error) {
+	newOrg, reponse, err := g.client.GetOrg(opts.Name)
+	if reponse.StatusCode == http.StatusNotFound {
+		visible := gsdk.VisibleTypePublic
+		if !opts.Visibility {
+			visible = gsdk.VisibleTypePrivate
+		}
+		newOrg, _, err = g.client.CreateOrg(gsdk.CreateOrgOption{
+			Name:        opts.Name,
+			Description: opts.Description,
+			Visibility:  visible,
+		})
+		if err != nil {
+			return nil, err
+		}
+	} else if err != nil {
+		return nil, err
+	}
+
+	return newOrg, nil
+}
