@@ -54,16 +54,10 @@ var repoCmd = &cobra.Command{
 		slog.Info("check project success", "name", org.Name)
 
 		// check project user permission
-		response, err = m.bitbucketClient.DefaultApi.GetUsersWithAnyPermission_23(projectKey, map[string]interface{}{})
+		users, err := m.GetUsersPermissionFromProject(projectKey)
 		if err != nil {
 			return err
 		}
-
-		users, err := bitbucketv1.GetUsersPermissionResponse(response)
-		if err != nil {
-			return err
-		}
-
 		for _, user := range users {
 			slog.Info("project permission",
 				"display", user.User.DisplayName,
@@ -73,32 +67,17 @@ var repoCmd = &cobra.Command{
 		}
 
 		// check project group permission
-		response, err = m.bitbucketClient.DefaultApi.GetGroupsWithAnyPermission_12(projectKey, map[string]interface{}{})
+		groups, err := m.GetGroupsPermissionFromProject(projectKey)
 		if err != nil {
 			return err
 		}
-
-		groups, err := bitbucketv1.GetGroupsPermissionResponse(response)
-		if err != nil {
-			return err
-		}
-
 		for _, group := range groups {
 			slog.Info("group permission",
 				"name", group.Group.Name,
 				"permission", group.Permission,
 			)
 
-			response, err = m.bitbucketClient.DefaultApi.FindUsersInGroup(
-				map[string]interface{}{
-					"context": group.Group.Name,
-				},
-			)
-			if err != nil {
-				return err
-			}
-
-			users, err := bitbucketv1.GetUsersResponse(response)
+			users, err := m.GetUsersFromGroup(group.Group.Name)
 			if err != nil {
 				return err
 			}
@@ -107,6 +86,7 @@ var repoCmd = &cobra.Command{
 					"display", user.DisplayName,
 					"account", user.Name,
 					"permission", group.Permission,
+					"group", group.Group.Name,
 				)
 			}
 		}
