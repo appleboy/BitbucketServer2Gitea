@@ -5,40 +5,22 @@ import (
 	"crypto/tls"
 	"errors"
 	"net/http"
-	"strings"
 
 	"code.gitea.io/sdk/gitea"
-	bitbucketv1 "github.com/gfleury/go-bitbucket-v1"
 	"github.com/spf13/viper"
 )
 
 type migration struct {
-	ctx               context.Context
-	bitbucketServer   string
-	bitbucketToken    string
-	bitbucketUsername string
-	bitbucketClient   *bitbucketv1.APIClient
-	giteaServer       string
-	giteaToken        string
-	giteaSkipVerify   bool
-	giteaClient       *gitea.Client
-}
-
-func (m *migration) initBitbucket() error {
-	if m.bitbucketServer == "" || m.bitbucketToken == "" {
-		return errors.New("mission bitbucket server or token")
-	}
-
-	m.bitbucketServer = strings.TrimRight(m.bitbucketServer, "/")
-
-	ctx := context.WithValue(m.ctx, bitbucketv1.ContextAccessToken, m.bitbucketToken)
-	if m.bitbucketClient == nil {
-		m.bitbucketClient = bitbucketv1.NewAPIClient(
-			ctx,
-			bitbucketv1.NewConfiguration(m.bitbucketServer+"/rest"),
-		)
-	}
-	return nil
+	ctx context.Context
+	// bitbucketServer   string
+	// bitbucketToken    string
+	// bitbucketUsername string
+	// bitbucketClient   *bitbucketv1.APIClient
+	bitbucket       *bitbucket
+	giteaServer     string
+	giteaToken      string
+	giteaSkipVerify bool
+	giteaClient     *gitea.Client
 }
 
 func (m *migration) initGitea() error {
@@ -76,19 +58,20 @@ func (m *migration) initGitea() error {
 // It also initializes the bitbucket and gitea clients.
 // Returns a pointer to the migration struct and any error encountered during initialization.
 func NewMigration(ctx context.Context) (*migration, error) {
-	m := &migration{
-		ctx:               ctx,
-		bitbucketServer:   viper.GetString("bitbucket.server"),
-		bitbucketUsername: viper.GetString("bitbucket.username"),
-		bitbucketToken:    viper.GetString("bitbucket.token"),
-		giteaServer:       viper.GetString("gitea.server"),
-		giteaSkipVerify:   viper.GetBool("gitea.skip-verify"),
-		giteaToken:        viper.GetString("gitea.token"),
-	}
-
-	if err := m.initBitbucket(); err != nil {
+	// initial bitbucket client
+	b, err := NewBitbucket(ctx)
+	if err != nil {
 		return nil, err
 	}
+
+	m := &migration{
+		ctx:             ctx,
+		bitbucket:       b,
+		giteaServer:     viper.GetString("gitea.server"),
+		giteaSkipVerify: viper.GetBool("gitea.skip-verify"),
+		giteaToken:      viper.GetString("gitea.token"),
+	}
+
 	if err := m.initGitea(); err != nil {
 		return nil, err
 	}

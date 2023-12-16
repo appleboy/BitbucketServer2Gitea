@@ -42,7 +42,7 @@ var repoCmd = &cobra.Command{
 		}
 
 		// check bitbucket project exist
-		response, err := m.bitbucketClient.DefaultApi.GetProject(projectKey)
+		response, err := m.bitbucket.client.DefaultApi.GetProject(projectKey)
 		if err != nil {
 			return err
 		}
@@ -54,7 +54,7 @@ var repoCmd = &cobra.Command{
 		slog.Info("check project success", "name", org.Name)
 
 		// check project user permission
-		users, err := m.GetUsersPermissionFromProject(projectKey)
+		users, err := m.bitbucket.GetUsersPermissionFromProject(projectKey)
 		if err != nil {
 			return err
 		}
@@ -67,7 +67,7 @@ var repoCmd = &cobra.Command{
 		}
 
 		// check project group permission
-		groups, err := m.GetGroupsPermissionFromProject(projectKey)
+		groups, err := m.bitbucket.GetGroupsPermissionFromProject(projectKey)
 		if err != nil {
 			return err
 		}
@@ -77,7 +77,7 @@ var repoCmd = &cobra.Command{
 				"permission", group.Permission,
 			)
 
-			users, err := m.GetUsersFromGroup(group.Group.Name)
+			users, err := m.bitbucket.GetUsersFromGroup(group.Group.Name)
 			if err != nil {
 				return err
 			}
@@ -91,7 +91,7 @@ var repoCmd = &cobra.Command{
 			}
 		}
 
-		response, err = m.bitbucketClient.DefaultApi.GetRepository(projectKey, repoSlug)
+		response, err = m.bitbucket.client.DefaultApi.GetRepository(projectKey, repoSlug)
 		if err != nil {
 			return err
 		}
@@ -103,7 +103,7 @@ var repoCmd = &cobra.Command{
 		slog.Info("check repo success", "name", repo.Name)
 
 		// check project group permission
-		groups, err = m.GetGroupsPermissionFromRepo(projectKey, repoSlug)
+		groups, err = m.bitbucket.GetGroupsPermissionFromRepo(projectKey, repoSlug)
 		if err != nil {
 			return err
 		}
@@ -113,7 +113,7 @@ var repoCmd = &cobra.Command{
 				"permission", group.Permission,
 			)
 
-			users, err := m.GetUsersFromGroup(group.Group.Name)
+			users, err := m.bitbucket.GetUsersFromGroup(group.Group.Name)
 			if err != nil {
 				return err
 			}
@@ -128,7 +128,7 @@ var repoCmd = &cobra.Command{
 		}
 
 		// check repo user permission
-		users, err = m.GetUsersPermissionFromRepo(projectKey, repoSlug)
+		users, err = m.bitbucket.GetUsersPermissionFromRepo(projectKey, repoSlug)
 		if err != nil {
 			return err
 		}
@@ -174,8 +174,8 @@ var repoCmd = &cobra.Command{
 			CloneAddr:    repo.Links.Clone[1].Href,
 			Private:      !repo.Public,
 			Description:  repo.Description,
-			AuthUsername: m.bitbucketUsername,
-			AuthPassword: m.bitbucketToken,
+			AuthUsername: m.bitbucket.Username,
+			AuthPassword: m.bitbucket.Token,
 		})
 		if err != nil {
 			return err
