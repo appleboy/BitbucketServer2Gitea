@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"strings"
 	"time"
 
@@ -44,7 +43,7 @@ var repoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		slog.Info("check project success", "name", org.Name)
+		m.logger.Info("check project success", "name", org.Name)
 
 		projectPermission := make(map[string][]string)
 		// check project user permission
@@ -53,7 +52,7 @@ var repoCmd = &cobra.Command{
 			return err
 		}
 		for _, user := range users {
-			slog.Debug("project permission",
+			m.logger.Debug("project permission",
 				"display", user.User.DisplayName,
 				"account", user.User.Name,
 				"permission", user.Permission,
@@ -77,7 +76,7 @@ var repoCmd = &cobra.Command{
 			return err
 		}
 		for _, group := range groups {
-			slog.Debug("group permission for project",
+			m.logger.Debug("group permission for project",
 				"name", group.Group.Name,
 				"permission", group.Permission,
 			)
@@ -87,7 +86,7 @@ var repoCmd = &cobra.Command{
 				return err
 			}
 			for _, user := range users {
-				slog.Debug("user permission in group",
+				m.logger.Debug("user permission in group",
 					"display", user.DisplayName,
 					"account", user.Name,
 					"permission", group.Permission,
@@ -111,7 +110,7 @@ var repoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		slog.Info("check repo success", "name", repo.Name)
+		m.logger.Info("check repo success", "name", repo.Name)
 
 		// check project group permission
 		groups, err = m.bitbucket.GetGroupsPermissionFromRepo(projectKey, repoSlug)
@@ -121,7 +120,7 @@ var repoCmd = &cobra.Command{
 
 		repoPermission := make(map[string][]string)
 		for _, group := range groups {
-			slog.Debug("group permission for repo",
+			m.logger.Debug("group permission for repo",
 				"name", group.Group.Name,
 				"permission", group.Permission,
 			)
@@ -131,7 +130,7 @@ var repoCmd = &cobra.Command{
 				return err
 			}
 			for _, user := range users {
-				slog.Debug("user permission in repo",
+				m.logger.Debug("user permission in repo",
 					"display", user.DisplayName,
 					"account", user.Name,
 					"permission", group.Permission,
@@ -157,7 +156,7 @@ var repoCmd = &cobra.Command{
 			return err
 		}
 		for _, user := range users {
-			slog.Debug("repo permission",
+			m.logger.Debug("repo permission",
 				"display", user.User.DisplayName,
 				"account", user.User.Name,
 				"permission", user.Permission,
@@ -185,7 +184,7 @@ var repoCmd = &cobra.Command{
 			targetRepo = repo.Name
 		}
 
-		slog.Info("start create organization", "name", targetOwner)
+		m.logger.Info("start create organization", "name", targetOwner)
 		newOrg, err := m.gitea.CreateAndGetOrg(CreateOrgOption{
 			Name:        targetOwner,
 			Description: org.Description,
@@ -195,7 +194,7 @@ var repoCmd = &cobra.Command{
 			return err
 		}
 
-		slog.Info("start migrate organization permission", "name", targetOwner)
+		m.logger.Info("start migrate organization permission", "name", targetOwner)
 		for permission, users := range projectPermission {
 			team, err := m.gitea.CreateOrGetTeam(targetOwner, permission)
 			if err != nil {
@@ -209,7 +208,7 @@ var repoCmd = &cobra.Command{
 			}
 		}
 
-		slog.Info("start migrate repo", "name", targetRepo, "owner", targetOwner)
+		m.logger.Info("start migrate repo", "name", targetRepo, "owner", targetOwner)
 		newRepo, err := m.gitea.MigrateRepo(MigrateRepoOption{
 			RepoName:     targetRepo,
 			RepoOwner:    targetOwner,
@@ -223,7 +222,7 @@ var repoCmd = &cobra.Command{
 			return err
 		}
 
-		slog.Info("start migrate repo permission", "name", newRepo.Name, "owner", newOrg.UserName)
+		m.logger.Info("start migrate repo permission", "name", newRepo.Name, "owner", newOrg.UserName)
 		for permission, users := range repoPermission {
 			for _, user := range users {
 				_, err := m.gitea.AddCollaborator(targetOwner, targetRepo, user, permission)

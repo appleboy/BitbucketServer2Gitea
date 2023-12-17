@@ -23,6 +23,7 @@ var rootCmd = &cobra.Command{
 // Used for flags.
 var (
 	cfgFile  string
+	debug    bool
 	replacer = strings.NewReplacer("-", "_", ".", "_")
 )
 
@@ -30,6 +31,7 @@ func init() {
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/bitbucketServer2Gitea/.config.yaml)")
+	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "debug mode")
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
 	rootCmd.AddCommand(repoCmd)
