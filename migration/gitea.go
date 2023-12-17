@@ -4,21 +4,22 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strings"
 
 	gsdk "code.gitea.io/sdk/gitea"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/slog"
 )
 
 // NewGitea creates a new instance of the gitea struct.
-func NewGitea(ctx context.Context) (*gitea, error) {
+func NewGitea(ctx context.Context, logger *slog.Logger) (*gitea, error) {
 	g := &gitea{
 		ctx:        ctx,
 		server:     viper.GetString("gitea.server"),
 		token:      viper.GetString("gitea.token"),
 		skipVerify: viper.GetBool("gitea.skip-verify"),
+		logger:     logger,
 	}
 
 	err := g.init()
@@ -36,6 +37,7 @@ type gitea struct {
 	token      string
 	skipVerify bool
 	client     *gsdk.Client
+	logger     *slog.Logger
 }
 
 // init initializes the gitea client.

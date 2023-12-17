@@ -29,13 +29,15 @@ func NewMigration(ctx context.Context, opts Option) (*migration, error) {
 		logLevel.Set(slog.LevelDebug)
 	}
 
+	l := slog.New(handler)
+
 	// initial bitbucket client
-	b, err := NewBitbucket(ctx)
+	b, err := NewBitbucket(ctx, l)
 	if err != nil {
 		return nil, err
 	}
 
-	g, err := NewGitea(ctx)
+	g, err := NewGitea(ctx, l)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +46,7 @@ func NewMigration(ctx context.Context, opts Option) (*migration, error) {
 		ctx:       ctx,
 		Bitbucket: b,
 		Gitea:     g,
-		Logger:    slog.New(handler),
+		Logger:    l,
 	}
 
 	return m, nil

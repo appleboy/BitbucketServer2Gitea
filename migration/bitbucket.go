@@ -3,6 +3,7 @@ package migration
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"strings"
 
 	bitbucketv1 "github.com/gfleury/go-bitbucket-v1"
@@ -22,12 +23,13 @@ const (
 )
 
 // NewBitbucket creates a new instance of the bitbucket struct.
-func NewBitbucket(ctx context.Context) (*bitbucket, error) {
+func NewBitbucket(ctx context.Context, logger *slog.Logger) (*bitbucket, error) {
 	b := &bitbucket{
 		ctx:      ctx,
 		server:   viper.GetString("bitbucket.server"),
 		Token:    viper.GetString("bitbucket.token"),
 		Username: viper.GetString("bitbucket.username"),
+		logger:   logger,
 	}
 
 	err := b.init()
@@ -45,6 +47,7 @@ type bitbucket struct {
 	Token    string
 	Username string
 	client   *bitbucketv1.APIClient
+	logger   *slog.Logger
 }
 
 // init initializes the bitbucket client.
