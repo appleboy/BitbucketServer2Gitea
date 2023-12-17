@@ -13,16 +13,21 @@ type migration struct {
 	Logger    *slog.Logger
 }
 
-func NewMigration(ctx context.Context) (*migration, error) {
-	logLevel := &slog.LevelVar{} // INFO
-	opts := &slog.HandlerOptions{
-		Level: logLevel,
-	}
-	handler := slog.NewTextHandler(os.Stdout, opts)
+// Option migration option
+type Option struct {
+	Debug bool
+}
 
-	// if debug {
-	// 	logLevel.Set(slog.LevelDebug)
-	// }
+// NewMigration creates a new instance of the migration struct.
+func NewMigration(ctx context.Context, opts Option) (*migration, error) {
+	logLevel := &slog.LevelVar{} // INFO
+	handler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: logLevel,
+	})
+
+	if opts.Debug {
+		logLevel.Set(slog.LevelDebug)
+	}
 
 	// initial bitbucket client
 	b, err := NewBitbucket(ctx)

@@ -33,7 +33,11 @@ var migrateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		m, err := migration.NewMigration(ctx)
+		m, err := migration.NewMigration(
+			ctx,
+			migration.Option{
+				Debug: debug,
+			})
 		if err != nil {
 			return err
 		}
