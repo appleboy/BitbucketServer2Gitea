@@ -161,3 +161,21 @@ func (g *gitea) GreateOrGetUser(opts CreateUserOption) (*gsdk.User, error) {
 
 	return user, nil
 }
+
+// AddCollaborator add collaborator
+func (g *gitea) AddCollaborator(org, repo, user, permission string) (*gsdk.Response, error) {
+	var access gsdk.AccessMode
+	switch permission {
+	case RepoAdmin:
+		access = gsdk.AccessModeAdmin
+	case RepoWrite:
+		access = gsdk.AccessModeWrite
+	case RepoRead:
+		access = gsdk.AccessModeRead
+	default:
+		return nil, errors.New("permission mode invalid")
+	}
+	return g.client.AddCollaborator(org, repo, user, gsdk.AddCollaboratorOption{
+		Permission: &access,
+	})
+}
