@@ -9,6 +9,7 @@ import (
 
 	gsdk "code.gitea.io/sdk/gitea"
 	"github.com/spf13/viper"
+	"golang.org/x/exp/slog"
 )
 
 // NewGitea creates a new instance of the gitea struct.
@@ -125,4 +126,38 @@ func (g *gitea) MigrateRepo(opts MigrateRepoOption) (*gsdk.Repository, error) {
 	}
 
 	return newRepo, nil
+}
+
+type CreateUserOption struct {
+	SourceID  int64
+	LoginName string
+	Username  string
+	FullName  string
+	Email     string
+}
+
+// GreateOrGetUser create or get user
+func (g *gitea) GreateOrGetUser(opts CreateUserOption) (*gsdk.User, error) {
+	user, resp, err := g.client.GetUserInfo(opts.Username)
+	if resp.StatusCode == http.StatusNotFound {
+		mustChangePassword := false
+		user, _, err = g.client.AdminCreateUser(gsdk.CreateUserOption{
+			SourceID:           opts.SourceID,
+			LoginName:          opts.LoginName,
+			Username:           opts.Username,
+			FullName:           opts.FullName,
+			Email:              opts.Email,
+			MustChangePassword: &mustChangePassword,
+		})
+		if err != nil {
+			return nil, err
+		}
+		slog.Info(
+			"create a new user",
+			"username", opts.Username,
+			"fullname", opts.FullName,
+		)
+	}
+
+	return user, nil
 }

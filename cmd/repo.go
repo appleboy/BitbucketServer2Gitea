@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -56,6 +57,16 @@ var repoCmd = &cobra.Command{
 				"account", user.User.Name,
 				"permission", user.Permission,
 			)
+			_, err := m.gitea.GreateOrGetUser(CreateUserOption{
+				SourceID:  1,
+				LoginName: strings.ToLower(user.User.Name),
+				Username:  user.User.Name,
+				FullName:  user.User.DisplayName,
+				Email:     user.User.EmailAddress,
+			})
+			if err != nil {
+				return err
+			}
 		}
 
 		// check project group permission
@@ -80,6 +91,16 @@ var repoCmd = &cobra.Command{
 					"permission", group.Permission,
 					"group", group.Group.Name,
 				)
+				_, err := m.gitea.GreateOrGetUser(CreateUserOption{
+					SourceID:  1,
+					LoginName: strings.ToLower(user.Name),
+					Username:  user.Name,
+					FullName:  user.DisplayName,
+					Email:     user.EmailAddress,
+				})
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -111,6 +132,16 @@ var repoCmd = &cobra.Command{
 					"permission", group.Permission,
 					"group", group.Group.Name,
 				)
+				_, err := m.gitea.GreateOrGetUser(CreateUserOption{
+					SourceID:  1,
+					LoginName: strings.ToLower(user.Name),
+					Username:  user.Name,
+					FullName:  user.DisplayName,
+					Email:     user.EmailAddress,
+				})
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -125,6 +156,16 @@ var repoCmd = &cobra.Command{
 				"account", user.User.Name,
 				"permission", user.Permission,
 			)
+			_, err := m.gitea.GreateOrGetUser(CreateUserOption{
+				SourceID:  1,
+				LoginName: strings.ToLower(user.User.Name),
+				Username:  user.User.Name,
+				FullName:  user.User.DisplayName,
+				Email:     user.User.EmailAddress,
+			})
+			if err != nil {
+				return err
+			}
 		}
 
 		// check gitea owner exist
