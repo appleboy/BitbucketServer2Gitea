@@ -18,16 +18,16 @@ var (
 )
 
 func init() {
-	repoCmd.PersistentFlags().StringVar(&projectKey, "project-key", "", "the parent project key")
-	repoCmd.PersistentFlags().StringVar(&repoSlug, "repo-slug", "", "the repository slug")
-	repoCmd.PersistentFlags().StringVar(&targetOwner, "target-owner", "", "gitea target owner")
-	repoCmd.PersistentFlags().StringVar(&targetRepo, "target-repo", "", "gitea target repo")
-	repoCmd.PersistentFlags().Int64Var(&sourceID, "source-id", 0, "gitea target repo")
+	migrateCmd.PersistentFlags().StringVar(&projectKey, "project-key", "", "the parent project key")
+	migrateCmd.PersistentFlags().StringVar(&repoSlug, "repo-slug", "", "the repository slug")
+	migrateCmd.PersistentFlags().StringVar(&targetOwner, "target-owner", "", "gitea target owner")
+	migrateCmd.PersistentFlags().StringVar(&targetRepo, "target-repo", "", "gitea target repo")
+	migrateCmd.PersistentFlags().Int64Var(&sourceID, "source-id", 0, "gitea target repo")
 }
 
-var repoCmd = &cobra.Command{
-	Use:   "repo",
-	Short: "migration single repository",
+var migrateCmd = &cobra.Command{
+	Use:   "migrate",
+	Short: "migrate organization repository",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()

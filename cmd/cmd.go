@@ -34,7 +34,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "debug mode")
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(configCmd)
-	rootCmd.AddCommand(repoCmd)
+	rootCmd.AddCommand(migrateCmd)
 
 	// hide completion command
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
