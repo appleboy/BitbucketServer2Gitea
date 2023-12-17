@@ -46,6 +46,7 @@ var repoCmd = &cobra.Command{
 		}
 		slog.Info("check project success", "name", org.Name)
 
+		projectPermission := make(map[string][]string)
 		// check project user permission
 		users, err := m.bitbucket.GetUsersPermissionFromProject(projectKey)
 		if err != nil {
@@ -67,6 +68,7 @@ var repoCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
+			projectPermission[user.Permission] = append(projectPermission[user.Permission], strings.ToLower(user.User.Name))
 		}
 
 		// check project group permission
@@ -101,6 +103,7 @@ var repoCmd = &cobra.Command{
 				if err != nil {
 					return err
 				}
+				projectPermission[group.Permission] = append(projectPermission[group.Permission], strings.ToLower(user.Name))
 			}
 		}
 
@@ -115,7 +118,8 @@ var repoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		usersPermission := make(map[string][]string)
+
+		repoPermission := make(map[string][]string)
 		for _, group := range groups {
 			slog.Info("group permission for repo",
 				"name", group.Group.Name,
@@ -143,7 +147,7 @@ var repoCmd = &cobra.Command{
 				if err != nil {
 					return err
 				}
-				usersPermission[group.Permission] = append(usersPermission[group.Permission], strings.ToLower(user.Name))
+				repoPermission[group.Permission] = append(repoPermission[group.Permission], strings.ToLower(user.Name))
 			}
 		}
 
@@ -168,7 +172,7 @@ var repoCmd = &cobra.Command{
 			if err != nil {
 				return err
 			}
-			usersPermission[user.Permission] = append(usersPermission[user.Permission], strings.ToLower(user.User.Name))
+			repoPermission[user.Permission] = append(repoPermission[user.Permission], strings.ToLower(user.User.Name))
 		}
 
 		// check gitea owner exist
@@ -181,7 +185,7 @@ var repoCmd = &cobra.Command{
 			targetRepo = repo.Name
 		}
 
-		slog.Info("get or create organization", "name", targetOwner)
+		slog.Info("start create organization", "name", targetOwner)
 		newOrg, err := m.gitea.CreateAndGetOrg(CreateOrgOption{
 			Name:        targetOwner,
 			Description: org.Description,
@@ -189,6 +193,20 @@ var repoCmd = &cobra.Command{
 		})
 		if err != nil {
 			return err
+		}
+
+		slog.Info("start migrate organization permission", "name", targetOwner)
+		for permission, users := range projectPermission {
+			team, err := m.gitea.CreateOrGetTeam(targetOwner, permission)
+			if err != nil {
+				return err
+			}
+			for _, user := range users {
+				err := m.gitea.AddTeamMember(team.ID, user)
+				if err != nil {
+					return err
+				}
+			}
 		}
 
 		slog.Info("start migrate repo", "name", targetRepo, "owner", targetOwner)
@@ -204,10 +222,9 @@ var repoCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		slog.Info("migrate repo success", "name", newRepo.Name, "owner", newOrg.UserName)
 
 		slog.Info("start migrate repo permission", "name", newRepo.Name, "owner", newOrg.UserName)
-		for permission, users := range usersPermission {
+		for permission, users := range repoPermission {
 			for _, user := range users {
 				_, err := m.gitea.AddCollaborator(targetOwner, targetRepo, user, permission)
 				if err != nil {
@@ -215,7 +232,6 @@ var repoCmd = &cobra.Command{
 				}
 			}
 		}
-		slog.Info("migrate repo permission success", "name", newRepo.Name, "owner", newOrg.UserName)
 		return nil
 	},
 }

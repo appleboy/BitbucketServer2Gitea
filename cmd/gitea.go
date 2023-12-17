@@ -179,3 +179,114 @@ func (g *gitea) AddCollaborator(org, repo, user, permission string) (*gsdk.Respo
 		Permission: &access,
 	})
 }
+
+// CreateOrGetTeam create team
+func (g *gitea) CreateOrGetTeam(org, permission string) (*gsdk.Team, error) {
+	var opt gsdk.CreateTeamOption
+	switch permission {
+	case ProjectAdmin:
+		opt = gsdk.CreateTeamOption{
+			Name:                    "OrgAdmin",
+			Description:             "OrgAdmin",
+			Permission:              gsdk.AccessModeAdmin,
+			IncludesAllRepositories: true,
+			CanCreateOrgRepo:        true,
+			Units: []gsdk.RepoUnitType{
+				gsdk.RepoUnitCode,
+				gsdk.RepoUnitIssues,
+				gsdk.RepoUnitExtIssues,
+				gsdk.RepoUnitExtWiki,
+				gsdk.RepoUnitPackages,
+				gsdk.RepoUnitProjects,
+				gsdk.RepoUnitPulls,
+				gsdk.RepoUnitReleases,
+				gsdk.RepoUnitWiki,
+				gsdk.RepoUnitActions,
+			},
+		}
+	case ProjectWrite:
+		opt = gsdk.CreateTeamOption{
+			Name:                    "OrgWriter",
+			Description:             "OrgWriter",
+			Permission:              gsdk.AccessModeWrite,
+			IncludesAllRepositories: true,
+			Units: []gsdk.RepoUnitType{
+				gsdk.RepoUnitCode,
+				gsdk.RepoUnitIssues,
+				gsdk.RepoUnitExtIssues,
+				gsdk.RepoUnitExtWiki,
+				gsdk.RepoUnitPackages,
+				gsdk.RepoUnitProjects,
+				gsdk.RepoUnitPulls,
+				gsdk.RepoUnitReleases,
+				gsdk.RepoUnitWiki,
+				gsdk.RepoUnitActions,
+			},
+		}
+	case ProjectRead:
+		opt = gsdk.CreateTeamOption{
+			Name:                    "OrgReader",
+			Description:             "OrgReader",
+			Permission:              gsdk.AccessModeRead,
+			IncludesAllRepositories: true,
+			Units: []gsdk.RepoUnitType{
+				gsdk.RepoUnitCode,
+				gsdk.RepoUnitIssues,
+				gsdk.RepoUnitExtIssues,
+				gsdk.RepoUnitExtWiki,
+				gsdk.RepoUnitPackages,
+				gsdk.RepoUnitProjects,
+				gsdk.RepoUnitPulls,
+				gsdk.RepoUnitReleases,
+				gsdk.RepoUnitWiki,
+				gsdk.RepoUnitActions,
+			},
+		}
+	case RepoCreate:
+		opt = gsdk.CreateTeamOption{
+			Name:                    "RepoCreater",
+			Description:             "RepoCreater",
+			Permission:              gsdk.AccessModeRead,
+			IncludesAllRepositories: false,
+			CanCreateOrgRepo:        true,
+			Units: []gsdk.RepoUnitType{
+				gsdk.RepoUnitCode,
+				gsdk.RepoUnitIssues,
+				gsdk.RepoUnitExtIssues,
+				gsdk.RepoUnitExtWiki,
+				gsdk.RepoUnitPackages,
+				gsdk.RepoUnitProjects,
+				gsdk.RepoUnitPulls,
+				gsdk.RepoUnitReleases,
+				gsdk.RepoUnitWiki,
+				gsdk.RepoUnitActions,
+			},
+		}
+	default:
+		return nil, errors.New("permission mode invalid")
+	}
+
+	teams, _, err := g.client.SearchOrgTeams(org, &gsdk.SearchTeamsOptions{
+		Query: opt.Name,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(teams) > 0 {
+		return teams[0], nil
+	}
+
+	// create team
+	team, _, err := g.client.CreateTeam(org, opt)
+	if err != nil {
+		return nil, err
+	}
+
+	return team, nil
+}
+
+// AddTeamMember add team member
+func (g *gitea) AddTeamMember(id int64, user string) error {
+	_, err := g.client.AddTeamMember(id, user)
+	return err
+}
