@@ -14,6 +14,7 @@ var (
 	repoSlug    string
 	targetOwner string
 	targetRepo  string
+	sourceID    int64
 )
 
 func init() {
@@ -21,6 +22,7 @@ func init() {
 	repoCmd.PersistentFlags().StringVar(&repoSlug, "repo-slug", "", "the repository slug")
 	repoCmd.PersistentFlags().StringVar(&targetOwner, "target-owner", "", "gitea target owner")
 	repoCmd.PersistentFlags().StringVar(&targetRepo, "target-repo", "", "gitea target repo")
+	repoCmd.PersistentFlags().Int64Var(&sourceID, "source-id", 0, "gitea target repo")
 }
 
 var repoCmd = &cobra.Command{
@@ -58,7 +60,7 @@ var repoCmd = &cobra.Command{
 				"permission", user.Permission,
 			)
 			_, err := m.gitea.GreateOrGetUser(CreateUserOption{
-				SourceID:  1,
+				SourceID:  sourceID,
 				LoginName: strings.ToLower(user.User.Name),
 				Username:  user.User.Name,
 				FullName:  user.User.DisplayName,
@@ -93,7 +95,7 @@ var repoCmd = &cobra.Command{
 					"group", group.Group.Name,
 				)
 				_, err := m.gitea.GreateOrGetUser(CreateUserOption{
-					SourceID:  1,
+					SourceID:  sourceID,
 					LoginName: strings.ToLower(user.Name),
 					Username:  user.Name,
 					FullName:  user.DisplayName,
@@ -137,7 +139,7 @@ var repoCmd = &cobra.Command{
 					"group", group.Group.Name,
 				)
 				_, err := m.gitea.GreateOrGetUser(CreateUserOption{
-					SourceID:  1,
+					SourceID:  sourceID,
 					LoginName: strings.ToLower(user.Name),
 					Username:  user.Name,
 					FullName:  user.DisplayName,
@@ -162,7 +164,7 @@ var repoCmd = &cobra.Command{
 				"permission", user.Permission,
 			)
 			_, err := m.gitea.GreateOrGetUser(CreateUserOption{
-				SourceID:  1,
+				SourceID:  sourceID,
 				LoginName: strings.ToLower(user.User.Name),
 				Username:  user.User.Name,
 				FullName:  user.User.DisplayName,
