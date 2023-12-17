@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/appleboy/BitbucketServer2Gitea/migration"
+
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +33,7 @@ var migrateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		m, err := NewMigration(ctx)
+		m, err := migration.NewMigration(ctx)
 		if err != nil {
 			return err
 		}
@@ -41,25 +43,25 @@ var migrateCmd = &cobra.Command{
 		}
 
 		// check bitbucket project exist
-		org, err := m.bitbucket.GetProject(projectKey)
+		org, err := m.Bitbucket.GetProject(projectKey)
 		if err != nil {
 			return err
 		}
-		m.logger.Info("check project success", "name", org.Name)
+		m.Logger.Info("check project success", "name", org.Name)
 
 		projectPermission := make(map[string][]string)
 		// check project user permission
-		users, err := m.bitbucket.GetUsersPermissionFromProject(projectKey)
+		users, err := m.Bitbucket.GetUsersPermissionFromProject(projectKey)
 		if err != nil {
 			return err
 		}
 		for _, user := range users {
-			m.logger.Debug("project permission",
+			m.Logger.Debug("project permission",
 				"display", user.User.DisplayName,
 				"account", user.User.Name,
 				"permission", user.Permission,
 			)
-			_, err := m.gitea.GreateOrGetUser(CreateUserOption{
+			_, err := m.Gitea.GreateOrGetUser(migration.CreateUserOption{
 				SourceID:  sourceID,
 				LoginName: strings.ToLower(user.User.Name),
 				Username:  user.User.Name,
@@ -73,28 +75,28 @@ var migrateCmd = &cobra.Command{
 		}
 
 		// check project group permission
-		groups, err := m.bitbucket.GetGroupsPermissionFromProject(projectKey)
+		groups, err := m.Bitbucket.GetGroupsPermissionFromProject(projectKey)
 		if err != nil {
 			return err
 		}
 		for _, group := range groups {
-			m.logger.Debug("group permission for project",
+			m.Logger.Debug("group permission for project",
 				"name", group.Group.Name,
 				"permission", group.Permission,
 			)
 
-			users, err := m.bitbucket.GetUsersFromGroup(group.Group.Name)
+			users, err := m.Bitbucket.GetUsersFromGroup(group.Group.Name)
 			if err != nil {
 				return err
 			}
 			for _, user := range users {
-				m.logger.Debug("user permission in group",
+				m.Logger.Debug("user permission in group",
 					"display", user.DisplayName,
 					"account", user.Name,
 					"permission", group.Permission,
 					"group", group.Group.Name,
 				)
-				_, err := m.gitea.GreateOrGetUser(CreateUserOption{
+				_, err := m.Gitea.GreateOrGetUser(migration.CreateUserOption{
 					SourceID:  sourceID,
 					LoginName: strings.ToLower(user.Name),
 					Username:  user.Name,
@@ -108,37 +110,37 @@ var migrateCmd = &cobra.Command{
 			}
 		}
 
-		repo, err := m.bitbucket.GetRepo(projectKey, repoSlug)
+		repo, err := m.Bitbucket.GetRepo(projectKey, repoSlug)
 		if err != nil {
 			return err
 		}
-		m.logger.Info("check repo success", "name", repo.Name)
+		m.Logger.Info("check repo success", "name", repo.Name)
 
 		// check project group permission
-		groups, err = m.bitbucket.GetGroupsPermissionFromRepo(projectKey, repoSlug)
+		groups, err = m.Bitbucket.GetGroupsPermissionFromRepo(projectKey, repoSlug)
 		if err != nil {
 			return err
 		}
 
 		repoPermission := make(map[string][]string)
 		for _, group := range groups {
-			m.logger.Debug("group permission for repo",
+			m.Logger.Debug("group permission for repo",
 				"name", group.Group.Name,
 				"permission", group.Permission,
 			)
 
-			users, err := m.bitbucket.GetUsersFromGroup(group.Group.Name)
+			users, err := m.Bitbucket.GetUsersFromGroup(group.Group.Name)
 			if err != nil {
 				return err
 			}
 			for _, user := range users {
-				m.logger.Debug("user permission in repo",
+				m.Logger.Debug("user permission in repo",
 					"display", user.DisplayName,
 					"account", user.Name,
 					"permission", group.Permission,
 					"group", group.Group.Name,
 				)
-				_, err := m.gitea.GreateOrGetUser(CreateUserOption{
+				_, err := m.Gitea.GreateOrGetUser(migration.CreateUserOption{
 					SourceID:  sourceID,
 					LoginName: strings.ToLower(user.Name),
 					Username:  user.Name,
@@ -153,17 +155,17 @@ var migrateCmd = &cobra.Command{
 		}
 
 		// check repo user permission
-		users, err = m.bitbucket.GetUsersPermissionFromRepo(projectKey, repoSlug)
+		users, err = m.Bitbucket.GetUsersPermissionFromRepo(projectKey, repoSlug)
 		if err != nil {
 			return err
 		}
 		for _, user := range users {
-			m.logger.Debug("repo permission",
+			m.Logger.Debug("repo permission",
 				"display", user.User.DisplayName,
 				"account", user.User.Name,
 				"permission", user.Permission,
 			)
-			_, err := m.gitea.GreateOrGetUser(CreateUserOption{
+			_, err := m.Gitea.GreateOrGetUser(migration.CreateUserOption{
 				SourceID:  sourceID,
 				LoginName: strings.ToLower(user.User.Name),
 				Username:  user.User.Name,
@@ -187,7 +189,7 @@ var migrateCmd = &cobra.Command{
 		}
 
 		// create new gitea organization
-		err = m.CreateNewOrg(CreateNewOrgOption{
+		err = m.CreateNewOrg(migration.CreateNewOrgOption{
 			Name:        targetOwner,
 			Description: org.Description,
 			Public:      org.Public,
@@ -198,7 +200,7 @@ var migrateCmd = &cobra.Command{
 		}
 
 		// create new gitea repository
-		err = m.MigrateNewRepo(MigrateNewRepoOption{
+		err = m.MigrateNewRepo(migration.MigrateNewRepoOption{
 			Owner:       targetOwner,
 			Name:        targetRepo,
 			CloneAddr:   repo.Links.Clone[1].Href,
