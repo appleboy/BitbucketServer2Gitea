@@ -53,7 +53,7 @@ var repoCmd = &cobra.Command{
 			return err
 		}
 		for _, user := range users {
-			slog.Info("project permission",
+			slog.Debug("project permission",
 				"display", user.User.DisplayName,
 				"account", user.User.Name,
 				"permission", user.Permission,
@@ -77,7 +77,7 @@ var repoCmd = &cobra.Command{
 			return err
 		}
 		for _, group := range groups {
-			slog.Info("group permission for project",
+			slog.Debug("group permission for project",
 				"name", group.Group.Name,
 				"permission", group.Permission,
 			)
@@ -87,7 +87,7 @@ var repoCmd = &cobra.Command{
 				return err
 			}
 			for _, user := range users {
-				slog.Info("user permission in group",
+				slog.Debug("user permission in group",
 					"display", user.DisplayName,
 					"account", user.Name,
 					"permission", group.Permission,
@@ -121,7 +121,7 @@ var repoCmd = &cobra.Command{
 
 		repoPermission := make(map[string][]string)
 		for _, group := range groups {
-			slog.Info("group permission for repo",
+			slog.Debug("group permission for repo",
 				"name", group.Group.Name,
 				"permission", group.Permission,
 			)
@@ -131,7 +131,7 @@ var repoCmd = &cobra.Command{
 				return err
 			}
 			for _, user := range users {
-				slog.Info("user permission in repo",
+				slog.Debug("user permission in repo",
 					"display", user.DisplayName,
 					"account", user.Name,
 					"permission", group.Permission,
@@ -157,7 +157,7 @@ var repoCmd = &cobra.Command{
 			return err
 		}
 		for _, user := range users {
-			slog.Info("repo permission",
+			slog.Debug("repo permission",
 				"display", user.User.DisplayName,
 				"account", user.User.Name,
 				"permission", user.Permission,
