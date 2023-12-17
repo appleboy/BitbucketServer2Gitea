@@ -159,3 +159,15 @@ func (b *bitbucket) GetRepo(projectKey, repoSlug string) (bitbucketv1.Repository
 
 	return bitbucketv1.GetRepositoryResponse(response)
 }
+
+// GetRepositories get repositories from project
+func (b *bitbucket) GetRepositories(projectKey string) ([]bitbucketv1.Repository, error) {
+	response, err := b.client.DefaultApi.GetRepositoriesWithOptions(projectKey, map[string]interface{}{
+		"limit": 200,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return bitbucketv1.GetRepositoriesResponse(response)
+}

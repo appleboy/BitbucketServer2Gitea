@@ -27,7 +27,7 @@ var repoCmd = &cobra.Command{
 	Use:   "repo",
 	Short: "migration single repository",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		m, err := NewMigration(ctx)
 		if err != nil {
@@ -184,53 +184,30 @@ var repoCmd = &cobra.Command{
 			targetRepo = repo.Name
 		}
 
-		m.logger.Info("start create organization", "name", targetOwner)
-		newOrg, err := m.gitea.CreateAndGetOrg(CreateOrgOption{
+		// create new gitea organization
+		err = m.CreateNewOrg(CreateNewOrgOption{
 			Name:        targetOwner,
 			Description: org.Description,
-			Visibility:  org.Public,
+			Public:      org.Public,
+			Permission:  projectPermission,
 		})
 		if err != nil {
 			return err
 		}
 
-		m.logger.Info("start migrate organization permission", "name", targetOwner)
-		for permission, users := range projectPermission {
-			team, err := m.gitea.CreateOrGetTeam(targetOwner, permission)
-			if err != nil {
-				return err
-			}
-			for _, user := range users {
-				err := m.gitea.AddTeamMember(team.ID, user)
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		m.logger.Info("start migrate repo", "name", targetRepo, "owner", targetOwner)
-		newRepo, err := m.gitea.MigrateRepo(MigrateRepoOption{
-			RepoName:     targetRepo,
-			RepoOwner:    targetOwner,
-			CloneAddr:    repo.Links.Clone[1].Href,
-			Private:      !repo.Public,
-			Description:  repo.Description,
-			AuthUsername: m.bitbucket.Username,
-			AuthPassword: m.bitbucket.Token,
+		// create new gitea repository
+		err = m.MigrateNewRepo(MigrateNewRepoOption{
+			Owner:       targetOwner,
+			Name:        targetRepo,
+			CloneAddr:   repo.Links.Clone[1].Href,
+			Description: repo.Description,
+			Private:     !repo.Public,
+			Permission:  repoPermission,
 		})
 		if err != nil {
 			return err
 		}
 
-		m.logger.Info("start migrate repo permission", "name", newRepo.Name, "owner", newOrg.UserName)
-		for permission, users := range repoPermission {
-			for _, user := range users {
-				_, err := m.gitea.AddCollaborator(targetOwner, targetRepo, user, permission)
-				if err != nil {
-					return err
-				}
-			}
-		}
 		return nil
 	},
 }
