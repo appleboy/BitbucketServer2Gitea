@@ -19,6 +19,7 @@ func NewGitea(ctx context.Context, logger *slog.Logger) (*gitea, error) {
 		server:     viper.GetString("gitea.server"),
 		token:      viper.GetString("gitea.token"),
 		skipVerify: viper.GetBool("gitea.skip-verify"),
+		sourceID:   viper.GetInt64("gitea.source-id"),
 		logger:     logger,
 	}
 
@@ -36,6 +37,7 @@ type gitea struct {
 	server     string
 	token      string
 	skipVerify bool
+	sourceID   int64
 	client     *gsdk.Client
 	logger     *slog.Logger
 }
@@ -141,6 +143,9 @@ type CreateUserOption struct {
 // GreateOrGetUser create or get user
 func (g *gitea) GreateOrGetUser(opts CreateUserOption) (*gsdk.User, error) {
 	user, resp, err := g.client.GetUserInfo(opts.Username)
+	if err != nil {
+		g.logger.Warn("get user info failed", "username", opts.Username, "err", err)
+	}
 	if resp.StatusCode == http.StatusNotFound {
 		mustChangePassword := false
 		user, _, err = g.client.AdminCreateUser(gsdk.CreateUserOption{

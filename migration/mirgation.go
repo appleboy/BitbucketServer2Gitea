@@ -4,6 +4,9 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"strings"
+
+	bitbucketv1 "github.com/gfleury/go-bitbucket-v1"
 )
 
 type migration struct {
@@ -130,4 +133,84 @@ func (m *migration) MigrateNewRepo(opts MigrateNewRepoOption) error {
 		}
 	}
 	return nil
+}
+
+// ProjectResponse project response
+type ProjectResponse struct {
+	Project    bitbucketv1.Project
+	Permission map[string][]string
+}
+
+// GetProjectData get project data
+func (m *migration) GetProjectData(projectKey string) (*ProjectResponse, error) {
+	org, err := m.Bitbucket.GetProject(projectKey)
+	if err != nil {
+		return nil, err
+	}
+
+	projectPermission := make(map[string][]string)
+	// check project user permission
+	users, err := m.Bitbucket.GetUsersPermissionFromProject(projectKey)
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range users {
+		m.Logger.Debug("project permission",
+			"display", user.User.DisplayName,
+			"account", user.User.Name,
+			"permission", user.Permission,
+		)
+		_, err := m.Gitea.GreateOrGetUser(CreateUserOption{
+			SourceID:  m.Gitea.sourceID,
+			LoginName: strings.ToLower(user.User.Name),
+			Username:  user.User.Name,
+			FullName:  user.User.DisplayName,
+			Email:     user.User.EmailAddress,
+		})
+		if err != nil {
+			return nil, err
+		}
+		projectPermission[user.Permission] = append(projectPermission[user.Permission], strings.ToLower(user.User.Name))
+	}
+
+	// check project group permission
+	groups, err := m.Bitbucket.GetGroupsPermissionFromProject(projectKey)
+	if err != nil {
+		return nil, err
+	}
+	for _, group := range groups {
+		m.Logger.Debug("group permission for project",
+			"name", group.Group.Name,
+			"permission", group.Permission,
+		)
+
+		users, err := m.Bitbucket.GetUsersFromGroup(group.Group.Name)
+		if err != nil {
+			return nil, err
+		}
+		for _, user := range users {
+			m.Logger.Debug("user permission in group",
+				"display", user.DisplayName,
+				"account", user.Name,
+				"permission", group.Permission,
+				"group", group.Group.Name,
+			)
+			_, err := m.Gitea.GreateOrGetUser(CreateUserOption{
+				// SourceID:  sourceID,
+				LoginName: strings.ToLower(user.Name),
+				Username:  user.Name,
+				FullName:  user.DisplayName,
+				Email:     user.EmailAddress,
+			})
+			if err != nil {
+				return nil, err
+			}
+			projectPermission[group.Permission] = append(projectPermission[group.Permission], strings.ToLower(user.Name))
+		}
+	}
+
+	return &ProjectResponse{
+		Project:    org,
+		Permission: projectPermission,
+	}, nil
 }

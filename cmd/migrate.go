@@ -16,7 +16,6 @@ var (
 	repoSlug    string
 	targetOwner string
 	targetRepo  string
-	sourceID    int64
 )
 
 func init() {
@@ -24,7 +23,6 @@ func init() {
 	migrateCmd.PersistentFlags().StringVar(&repoSlug, "repo-slug", "", "the repository slug")
 	migrateCmd.PersistentFlags().StringVar(&targetOwner, "target-owner", "", "gitea target owner")
 	migrateCmd.PersistentFlags().StringVar(&targetRepo, "target-repo", "", "gitea target repo")
-	migrateCmd.PersistentFlags().Int64Var(&sourceID, "source-id", 0, "gitea target repo")
 }
 
 var migrateCmd = &cobra.Command{
@@ -46,72 +44,9 @@ var migrateCmd = &cobra.Command{
 			return errors.New("project-key or repo-slug is empty")
 		}
 
-		// check bitbucket project exist
-		org, err := m.Bitbucket.GetProject(projectKey)
+		orgResp, err := m.GetProjectData(projectKey)
 		if err != nil {
 			return err
-		}
-		m.Logger.Info("check project success", "name", org.Name)
-
-		projectPermission := make(map[string][]string)
-		// check project user permission
-		users, err := m.Bitbucket.GetUsersPermissionFromProject(projectKey)
-		if err != nil {
-			return err
-		}
-		for _, user := range users {
-			m.Logger.Debug("project permission",
-				"display", user.User.DisplayName,
-				"account", user.User.Name,
-				"permission", user.Permission,
-			)
-			_, err := m.Gitea.GreateOrGetUser(migration.CreateUserOption{
-				SourceID:  sourceID,
-				LoginName: strings.ToLower(user.User.Name),
-				Username:  user.User.Name,
-				FullName:  user.User.DisplayName,
-				Email:     user.User.EmailAddress,
-			})
-			if err != nil {
-				return err
-			}
-			projectPermission[user.Permission] = append(projectPermission[user.Permission], strings.ToLower(user.User.Name))
-		}
-
-		// check project group permission
-		groups, err := m.Bitbucket.GetGroupsPermissionFromProject(projectKey)
-		if err != nil {
-			return err
-		}
-		for _, group := range groups {
-			m.Logger.Debug("group permission for project",
-				"name", group.Group.Name,
-				"permission", group.Permission,
-			)
-
-			users, err := m.Bitbucket.GetUsersFromGroup(group.Group.Name)
-			if err != nil {
-				return err
-			}
-			for _, user := range users {
-				m.Logger.Debug("user permission in group",
-					"display", user.DisplayName,
-					"account", user.Name,
-					"permission", group.Permission,
-					"group", group.Group.Name,
-				)
-				_, err := m.Gitea.GreateOrGetUser(migration.CreateUserOption{
-					SourceID:  sourceID,
-					LoginName: strings.ToLower(user.Name),
-					Username:  user.Name,
-					FullName:  user.DisplayName,
-					Email:     user.EmailAddress,
-				})
-				if err != nil {
-					return err
-				}
-				projectPermission[group.Permission] = append(projectPermission[group.Permission], strings.ToLower(user.Name))
-			}
 		}
 
 		repo, err := m.Bitbucket.GetRepo(projectKey, repoSlug)
@@ -121,7 +56,7 @@ var migrateCmd = &cobra.Command{
 		m.Logger.Info("check repo success", "name", repo.Name)
 
 		// check project group permission
-		groups, err = m.Bitbucket.GetGroupsPermissionFromRepo(projectKey, repoSlug)
+		groups, err := m.Bitbucket.GetGroupsPermissionFromRepo(projectKey, repoSlug)
 		if err != nil {
 			return err
 		}
@@ -145,7 +80,7 @@ var migrateCmd = &cobra.Command{
 					"group", group.Group.Name,
 				)
 				_, err := m.Gitea.GreateOrGetUser(migration.CreateUserOption{
-					SourceID:  sourceID,
+					// SourceID:  sourceID,
 					LoginName: strings.ToLower(user.Name),
 					Username:  user.Name,
 					FullName:  user.DisplayName,
@@ -159,7 +94,7 @@ var migrateCmd = &cobra.Command{
 		}
 
 		// check repo user permission
-		users, err = m.Bitbucket.GetUsersPermissionFromRepo(projectKey, repoSlug)
+		users, err := m.Bitbucket.GetUsersPermissionFromRepo(projectKey, repoSlug)
 		if err != nil {
 			return err
 		}
@@ -170,7 +105,7 @@ var migrateCmd = &cobra.Command{
 				"permission", user.Permission,
 			)
 			_, err := m.Gitea.GreateOrGetUser(migration.CreateUserOption{
-				SourceID:  sourceID,
+				// SourceID:  sourceID,
 				LoginName: strings.ToLower(user.User.Name),
 				Username:  user.User.Name,
 				FullName:  user.User.DisplayName,
@@ -184,7 +119,7 @@ var migrateCmd = &cobra.Command{
 
 		// check gitea owner exist
 		if targetOwner == "" {
-			targetOwner = org.Name
+			targetOwner = orgResp.Project.Name
 		}
 
 		// check gitea repository exist
@@ -195,9 +130,9 @@ var migrateCmd = &cobra.Command{
 		// create new gitea organization
 		err = m.CreateNewOrg(migration.CreateNewOrgOption{
 			Name:        targetOwner,
-			Description: org.Description,
-			Public:      org.Public,
-			Permission:  projectPermission,
+			Description: orgResp.Project.Description,
+			Public:      orgResp.Project.Public,
+			Permission:  orgResp.Permission,
 		})
 		if err != nil {
 			return err
