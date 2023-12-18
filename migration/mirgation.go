@@ -214,3 +214,84 @@ func (m *migration) GetProjectData(projectKey string) (*ProjectResponse, error) 
 		Permission: permission,
 	}, nil
 }
+
+// RepositoryResponse repository response
+type RepositoryResponse struct {
+	Repository bitbucketv1.Repository
+	Permission map[string][]string
+}
+
+// GetRepositoryData get repository data
+func (m *migration) GetRepositoryData(projectKey, repoSlug string) (*RepositoryResponse, error) {
+	repo, err := m.Bitbucket.GetRepo(projectKey, repoSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	// check project group permission
+	groups, err := m.Bitbucket.GetGroupsPermissionFromRepo(projectKey, repoSlug)
+	if err != nil {
+		return nil, err
+	}
+
+	permission := make(map[string][]string)
+	for _, group := range groups {
+		m.Logger.Debug("group permission for repo",
+			"name", group.Group.Name,
+			"permission", group.Permission,
+		)
+
+		users, err := m.Bitbucket.GetUsersFromGroup(group.Group.Name)
+		if err != nil {
+			return nil, err
+		}
+		for _, user := range users {
+			m.Logger.Debug("user permission in repo",
+				"display", user.DisplayName,
+				"account", user.Name,
+				"permission", group.Permission,
+				"group", group.Group.Name,
+			)
+			_, err := m.Gitea.GreateOrGetUser(CreateUserOption{
+				SourceID:  m.Gitea.sourceID,
+				LoginName: strings.ToLower(user.Name),
+				Username:  user.Name,
+				FullName:  user.DisplayName,
+				Email:     user.EmailAddress,
+			})
+			if err != nil {
+				return nil, err
+			}
+			permission[group.Permission] = append(permission[group.Permission], strings.ToLower(user.Name))
+		}
+	}
+
+	// check repo user permission
+	users, err := m.Bitbucket.GetUsersPermissionFromRepo(projectKey, repoSlug)
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range users {
+		m.Logger.Debug("repo permission",
+			"display", user.User.DisplayName,
+			"account", user.User.Name,
+			"permission", user.Permission,
+		)
+		_, err := m.Gitea.GreateOrGetUser(CreateUserOption{
+			SourceID:  m.Gitea.sourceID,
+			LoginName: strings.ToLower(user.User.Name),
+			Username:  user.User.Name,
+			FullName:  user.User.DisplayName,
+			Email:     user.User.EmailAddress,
+		})
+		if err != nil {
+			return nil, err
+		}
+		permission[user.Permission] = append(permission[user.Permission], strings.ToLower(user.User.Name))
+	}
+
+	return &RepositoryResponse{
+		Repository: repo,
+		Permission: permission,
+	}, nil
+}
