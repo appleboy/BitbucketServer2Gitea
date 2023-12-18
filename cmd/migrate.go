@@ -28,7 +28,7 @@ var migrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "migrate organization repository",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		m, err := migration.NewMigration(
 			ctx,
@@ -39,8 +39,10 @@ var migrateCmd = &cobra.Command{
 			return err
 		}
 
-		if projectKey == "" || repoSlug == "" {
-			return errors.New("project-key or repo-slug is empty")
+		repoList := []string{}
+
+		if projectKey == "" {
+			return errors.New("project-key can't be empty")
 		}
 
 		orgResp, err := m.GetProjectData(projectKey)
@@ -48,19 +50,23 @@ var migrateCmd = &cobra.Command{
 			return err
 		}
 
-		repoResp, err := m.GetRepositoryData(projectKey, repoSlug)
-		if err != nil {
-			return err
+		if repoSlug != "" {
+			repoList = append(repoList, repoSlug)
+		} else {
+			// get all repository list
+			repos, err := m.Bitbucket.GetRepositories(projectKey)
+			if err != nil {
+				return err
+			}
+
+			for _, repo := range repos {
+				repoList = append(repoList, repo.Slug)
+			}
 		}
 
 		// check gitea owner exist
 		if targetOwner == "" {
 			targetOwner = orgResp.Project.Name
-		}
-
-		// check gitea repository exist
-		if targetRepo == "" {
-			targetRepo = repoResp.Repository.Name
 		}
 
 		// create new gitea organization
@@ -74,17 +80,38 @@ var migrateCmd = &cobra.Command{
 			return err
 		}
 
-		// create new gitea repository
-		err = m.MigrateNewRepo(migration.MigrateNewRepoOption{
-			Owner:       targetOwner,
-			Name:        targetRepo,
-			CloneAddr:   repoResp.Repository.Links.Clone[1].Href,
-			Description: repoResp.Repository.Description,
-			Private:     !repoResp.Repository.Public,
-			Permission:  repoResp.Permission,
-		})
-		if err != nil {
-			return err
+		for _, repoSlug := range repoList {
+			repoResp, err := m.GetRepositoryData(projectKey, repoSlug)
+			if err != nil {
+				return err
+			}
+
+			repoName := repoResp.Repository.Name
+			// check gitea repository exist
+			if targetRepo != "" && len(repoList) == 1 {
+				repoName = targetRepo
+			}
+
+			cloneAddr := ""
+			for _, link := range repoResp.Repository.Links.Clone {
+				if link.Name == "http" {
+					cloneAddr = link.Href
+					break
+				}
+			}
+
+			// create new gitea repository
+			err = m.MigrateNewRepo(migration.MigrateNewRepoOption{
+				Owner:       targetOwner,
+				Name:        repoName,
+				CloneAddr:   cloneAddr,
+				Description: repoResp.Repository.Description,
+				Private:     !repoResp.Repository.Public,
+				Permission:  repoResp.Permission,
+			})
+			if err != nil {
+				m.Logger.Error("migration repository error", "error", err)
+			}
 		}
 
 		return nil

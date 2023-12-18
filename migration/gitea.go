@@ -159,7 +159,7 @@ func (g *gitea) GreateOrGetUser(opts CreateUserOption) (*gsdk.User, error) {
 		if err != nil {
 			return nil, err
 		}
-		slog.Info(
+		g.logger.Info(
 			"create a new user",
 			"username", opts.Username,
 			"fullname", opts.FullName,
