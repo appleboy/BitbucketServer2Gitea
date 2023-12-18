@@ -148,7 +148,7 @@ func (m *migration) GetProjectData(projectKey string) (*ProjectResponse, error) 
 		return nil, err
 	}
 
-	projectPermission := make(map[string][]string)
+	permission := make(map[string][]string)
 	// check project user permission
 	users, err := m.Bitbucket.GetUsersPermissionFromProject(projectKey)
 	if err != nil {
@@ -170,7 +170,7 @@ func (m *migration) GetProjectData(projectKey string) (*ProjectResponse, error) 
 		if err != nil {
 			return nil, err
 		}
-		projectPermission[user.Permission] = append(projectPermission[user.Permission], strings.ToLower(user.User.Name))
+		permission[user.Permission] = append(permission[user.Permission], strings.ToLower(user.User.Name))
 	}
 
 	// check project group permission
@@ -205,12 +205,12 @@ func (m *migration) GetProjectData(projectKey string) (*ProjectResponse, error) 
 			if err != nil {
 				return nil, err
 			}
-			projectPermission[group.Permission] = append(projectPermission[group.Permission], strings.ToLower(user.Name))
+			permission[group.Permission] = append(permission[group.Permission], strings.ToLower(user.Name))
 		}
 	}
 
 	return &ProjectResponse{
 		Project:    org,
-		Permission: projectPermission,
+		Permission: permission,
 	}, nil
 }
