@@ -1,6 +1,6 @@
 cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
-code.gitea.io/sdk/gitea v0.17.0 h1:8JPBss4+Jf7AE1YcfyiGrngTXE8dFSG3si/bypsTH34=
-code.gitea.io/sdk/gitea v0.17.0/go.mod h1:ndkDk99BnfiUCCYEUhpNzi0lpmApXlwRFqClBlOlEBg=
+code.gitea.io/sdk/gitea v0.17.1-0.20231217043639-c8745e1599b6 h1:3o8S82oLO3SyZYQ9hqh3Mo1E0WCwLN66KuxyCR6ilK8=
+code.gitea.io/sdk/gitea v0.17.1-0.20231217043639-c8745e1599b6/go.mod h1:ndkDk99BnfiUCCYEUhpNzi0lpmApXlwRFqClBlOlEBg=
 github.com/appleboy/com v0.1.7 h1:4lYTFNoMAAXGGIC8lDxVg/NY+1aXbYqfAWN05cZhd0M=
 github.com/appleboy/com v0.1.7/go.mod h1:JUK+oH0SXCLRH57pDMJx6VWVsm8CPdajalmRSWwamBE=
 github.com/appleboy/go-bitbucket-v1 v0.0.0-20231216080418-bafb48ca1464 h1:7fGV3w3Lpi0Rw4dZDs+W7bo4M9cA5bQPGcaA1fMawL8=
