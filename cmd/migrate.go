@@ -8,6 +8,7 @@ import (
 	"github.com/appleboy/BitbucketServer2Gitea/migration"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -22,13 +23,22 @@ func init() {
 	migrateCmd.PersistentFlags().StringVar(&repoSlug, "repo-slug", "", "the repository slug")
 	migrateCmd.PersistentFlags().StringVar(&targetOwner, "target-owner", "", "gitea target owner")
 	migrateCmd.PersistentFlags().StringVar(&targetRepo, "target-repo", "", "gitea target repo")
+	migrateCmd.Flags().StringP("timeout", "t", "10m", "timeout for migration")
+	_ = viper.BindPFlag("timeout", migrateCmd.Flags().Lookup("timeout"))
 }
 
 var migrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "migrate organization repository",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		// check timeout format
+		timeout, err := time.ParseDuration(viper.GetString("timeout"))
+		if err != nil {
+			return err
+		}
+
+		// command timeout
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
 		m, err := migration.NewMigration(
 			ctx,
