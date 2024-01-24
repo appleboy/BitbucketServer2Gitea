@@ -196,7 +196,7 @@ func (m *migration) GetProjectData(projectKey string) (*ProjectResponse, error) 
 				"group", group.Group.Name,
 			)
 			_, err := m.Gitea.GreateOrGetUser(CreateUserOption{
-				// SourceID:  sourceID,
+				SourceID:  m.Gitea.sourceID,
 				LoginName: strings.ToLower(user.Name),
 				Username:  user.Name,
 				FullName:  user.DisplayName,
