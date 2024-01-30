@@ -10,18 +10,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	// project permission
-	ProjectAdmin = "PROJECT_ADMIN"
-	ProjectWrite = "PROJECT_WRITE"
-	ProjectRead  = "PROJECT_READ"
-	// repo permission
-	RepoAdmin  = "REPO_ADMIN"
-	RepoWrite  = "REPO_WRITE"
-	RepoRead   = "REPO_READ"
-	RepoCreate = "REPO_CREATE"
-)
-
 // NewBitbucket creates a new instance of the bitbucket struct.
 func NewBitbucket(ctx context.Context, logger *slog.Logger) (*bitbucket, error) {
 	b := &bitbucket{
@@ -64,83 +52,6 @@ func (b *bitbucket) init() error {
 		bitbucketv1.NewConfiguration(b.server+"/rest"),
 	)
 	return nil
-}
-
-// GetUsersPermissionFromProject get users permission from project
-func (b *bitbucket) GetUsersPermissionFromProject(projectKey string) ([]bitbucketv1.UserPermission, error) {
-	// check project user permission
-	response, err := b.client.DefaultApi.GetUsersWithAnyPermission_23(
-		projectKey,
-		map[string]interface{}{
-			"limit": 200,
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return bitbucketv1.GetUsersPermissionResponse(response)
-}
-
-// GetUsersPermissionFromRepo get users permission from repo
-func (b *bitbucket) GetUsersPermissionFromRepo(projectKey, repoSlug string) ([]bitbucketv1.UserPermission, error) {
-	// check project user permission
-	response, err := b.client.DefaultApi.GetUsersWithAnyPermission_24(
-		projectKey,
-		repoSlug,
-		map[string]interface{}{
-			"limit": 200,
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return bitbucketv1.GetUsersPermissionResponse(response)
-}
-
-// GetGroupsPermissionFromProject get groups permission from project
-func (b *bitbucket) GetGroupsPermissionFromProject(projectKey string) ([]bitbucketv1.GroupPermission, error) {
-	// check project group permission
-	response, err := b.client.DefaultApi.GetGroupsWithAnyPermission_12(
-		projectKey,
-		map[string]interface{}{
-			"limit": 200,
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return bitbucketv1.GetGroupsPermissionResponse(response)
-}
-
-// GetGroupsPermissionFromRepo get groups permission from repo
-func (b *bitbucket) GetGroupsPermissionFromRepo(projectKey, repoSlug string) ([]bitbucketv1.GroupPermission, error) {
-	// check project group permission
-	response, err := b.client.DefaultApi.GetGroupsWithAnyPermission_13(
-		projectKey,
-		repoSlug,
-		map[string]interface{}{
-			"limit": 200,
-		})
-	if err != nil {
-		return nil, err
-	}
-
-	return bitbucketv1.GetGroupsPermissionResponse(response)
-}
-
-// GetUsersFromGroup get users from group
-func (b *bitbucket) GetUsersFromGroup(g string) ([]bitbucketv1.User, error) {
-	response, err := b.client.DefaultApi.FindUsersInGroup(
-		map[string]interface{}{
-			"context": g,
-			"limit":   200,
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return bitbucketv1.GetUsersResponse(response)
 }
 
 // GetProject get project
