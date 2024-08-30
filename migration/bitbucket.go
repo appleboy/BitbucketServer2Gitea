@@ -2,8 +2,11 @@ package migration
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"log/slog"
+	"net/http"
 	"strings"
 
 	bitbucketv1 "github.com/gfleury/go-bitbucket-v1"
@@ -61,8 +64,24 @@ func (b *bitbucket) init() error {
 	ctx := context.WithValue(b.ctx, bitbucketv1.ContextAccessToken, b.Token)
 	b.client = bitbucketv1.NewAPIClient(
 		ctx,
-		bitbucketv1.NewConfiguration(b.server+"/rest"),
+		bitbucketv1.NewConfiguration(
+			b.server+"/rest",
+			func(cfg *bitbucketv1.Configuration) {
+				certs, _ := x509.SystemCertPool()
+				// add new http client for skip verify
+				httpClient := &http.Client{
+					Transport: &http.Transport{
+						TLSClientConfig: &tls.Config{
+							RootCAs:            certs,
+							InsecureSkipVerify: true,
+						},
+					},
+				}
+				cfg.HTTPClient = httpClient
+			},
+		),
 	)
+
 	return nil
 }
 

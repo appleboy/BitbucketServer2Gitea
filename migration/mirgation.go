@@ -160,6 +160,10 @@ func (m *migration) GetProjectData(projectKey string) (*ProjectResponse, error) 
 			"account", user.User.Name,
 			"permission", user.Permission,
 		)
+		if user.User.EmailAddress == "" {
+			m.Logger.Warn("user email is empty", "account", user.User.Name)
+			continue
+		}
 		_, err := m.Gitea.GreateOrGetUser(CreateUserOption{
 			SourceID:  m.Gitea.sourceID,
 			LoginName: strings.ToLower(user.User.Name),
@@ -195,6 +199,10 @@ func (m *migration) GetProjectData(projectKey string) (*ProjectResponse, error) 
 				"permission", group.Permission,
 				"group", group.Group.Name,
 			)
+			if user.EmailAddress == "" {
+				m.Logger.Warn("user email is empty", "account", user.Name)
+				continue
+			}
 			_, err := m.Gitea.GreateOrGetUser(CreateUserOption{
 				SourceID:  m.Gitea.sourceID,
 				LoginName: strings.ToLower(user.Name),
@@ -252,6 +260,10 @@ func (m *migration) GetRepositoryData(projectKey, repoSlug string) (*RepositoryR
 				"permission", group.Permission,
 				"group", group.Group.Name,
 			)
+			if user.EmailAddress == "" {
+				m.Logger.Warn("user email is empty", "account", user.Name)
+				continue
+			}
 			_, err := m.Gitea.GreateOrGetUser(CreateUserOption{
 				SourceID:  m.Gitea.sourceID,
 				LoginName: strings.ToLower(user.Name),
@@ -277,6 +289,10 @@ func (m *migration) GetRepositoryData(projectKey, repoSlug string) (*RepositoryR
 			"account", user.User.Name,
 			"permission", user.Permission,
 		)
+		if user.User.EmailAddress == "" {
+			m.Logger.Warn("user email is empty", "account", user.User.Name)
+			continue
+		}
 		_, err := m.Gitea.GreateOrGetUser(CreateUserOption{
 			SourceID:  m.Gitea.sourceID,
 			LoginName: strings.ToLower(user.User.Name),
