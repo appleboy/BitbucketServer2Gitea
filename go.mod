@@ -2,8 +2,6 @@ module github.com/appleboy/BitbucketServer2Gitea
 
 go 1.22.0
 
-toolchain go1.22.2
-
 require (
 	code.gitea.io/sdk/gitea v0.19.0
 	github.com/appleboy/com v0.1.7
