@@ -24,6 +24,6 @@ bitbucketServer2Gitea config set gitea.token xxxxxxxxxxxxxx
 ## Migration Single Repository
 
 ```bash
-bitbucketServer2Gitea repo --project-key AIA --repo-slug test \
+bitbucketServer2Gitea migrate --project-key AIA --repo-slug test \
   --target-owner admin --target-repo test
 ```
