@@ -7,7 +7,7 @@ require (
 	github.com/appleboy/com v0.3.0
 	github.com/fatih/color v1.18.0
 	github.com/gfleury/go-bitbucket-v1 v0.0.0-20230830121038-6e30c5760c87
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 )
 
