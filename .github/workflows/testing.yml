@@ -27,14 +27,14 @@ jobs:
           check-latest: true
 
       - name: Setup golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v7
         with:
           version: latest
           args: --verbose
 
   testing:
     runs-on: ubuntu-latest
-    container: golang:1.22-alpine
+    container: golang:1.23-alpine
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
