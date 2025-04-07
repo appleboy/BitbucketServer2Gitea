@@ -3,7 +3,7 @@ module github.com/appleboy/BitbucketServer2Gitea
 go 1.23.0
 
 require (
-	code.gitea.io/sdk/gitea v0.20.0
+	code.gitea.io/sdk/gitea v0.21.0
 	github.com/appleboy/com v0.3.0
 	github.com/fatih/color v1.18.0
 	github.com/gfleury/go-bitbucket-v1 v0.0.0-20230830121038-6e30c5760c87
