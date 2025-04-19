@@ -13,18 +13,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	// project permission
-	ProjectAdmin = "PROJECT_ADMIN"
-	ProjectWrite = "PROJECT_WRITE"
-	ProjectRead  = "PROJECT_READ"
-	// repo permission
-	RepoAdmin  = "REPO_ADMIN"
-	RepoWrite  = "REPO_WRITE"
-	RepoRead   = "REPO_READ"
-	RepoCreate = "REPO_CREATE"
-)
-
 // NewBitbucket creates a new instance of the bitbucket struct.
 func NewBitbucket(ctx context.Context, logger *slog.Logger) (*bitbucket, error) {
 	b := &bitbucket{

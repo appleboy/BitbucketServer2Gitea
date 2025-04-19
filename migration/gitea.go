@@ -45,7 +45,7 @@ type gitea struct {
 // init initializes the gitea client.
 func (g *gitea) init() error {
 	if g.server == "" || g.token == "" {
-		return errors.New("mission gitea server or token")
+		return errors.New("missing gitea server or token")
 	}
 
 	g.server = strings.TrimRight(g.server, "/")
@@ -173,11 +173,11 @@ func (g *gitea) CreateOrGetUser(opts CreateUserOption) (*gsdk.User, error) {
 func (g *gitea) AddCollaborator(org, repo, user, permission string) (*gsdk.Response, error) {
 	var access gsdk.AccessMode
 	switch permission {
-	case RepoAdmin:
+	case GiteaRepoAdmin:
 		access = gsdk.AccessModeAdmin
-	case RepoWrite:
+	case GiteaRepoWrite:
 		access = gsdk.AccessModeWrite
-	case RepoRead:
+	case GiteaRepoRead:
 		access = gsdk.AccessModeRead
 	default:
 		return nil, errors.New("permission mode invalid")
@@ -191,7 +191,7 @@ func (g *gitea) AddCollaborator(org, repo, user, permission string) (*gsdk.Respo
 func (g *gitea) CreateOrGetTeam(org, permission string) (*gsdk.Team, error) {
 	var opt gsdk.CreateTeamOption
 	switch permission {
-	case ProjectAdmin:
+	case GiteaProjectAdmin:
 		opt = gsdk.CreateTeamOption{
 			Name:                    "OrgAdmin",
 			Description:             "OrgAdmin",
@@ -211,7 +211,7 @@ func (g *gitea) CreateOrGetTeam(org, permission string) (*gsdk.Team, error) {
 				gsdk.RepoUnitActions,
 			},
 		}
-	case ProjectWrite:
+	case GiteaProjectWrite:
 		opt = gsdk.CreateTeamOption{
 			Name:                    "OrgWriter",
 			Description:             "OrgWriter",
@@ -230,7 +230,7 @@ func (g *gitea) CreateOrGetTeam(org, permission string) (*gsdk.Team, error) {
 				gsdk.RepoUnitActions,
 			},
 		}
-	case ProjectRead:
+	case GiteaProjectRead:
 		opt = gsdk.CreateTeamOption{
 			Name:                    "OrgReader",
 			Description:             "OrgReader",
@@ -249,7 +249,7 @@ func (g *gitea) CreateOrGetTeam(org, permission string) (*gsdk.Team, error) {
 				gsdk.RepoUnitActions,
 			},
 		}
-	case RepoCreate:
+	case GiteaRepoCreate:
 		opt = gsdk.CreateTeamOption{
 			Name:                    "RepoCreater",
 			Description:             "RepoCreater",
