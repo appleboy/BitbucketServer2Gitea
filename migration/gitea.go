@@ -140,8 +140,8 @@ type CreateUserOption struct {
 	Email     string
 }
 
-// GreateOrGetUser create or get user
-func (g *gitea) GreateOrGetUser(opts CreateUserOption) (*gsdk.User, error) {
+// CreateOrGetUser create or get user
+func (g *gitea) CreateOrGetUser(opts CreateUserOption) (*gsdk.User, error) {
 	user, resp, err := g.client.GetUserInfo(opts.Username)
 	if err != nil {
 		g.logger.Warn("get user info failed", "username", opts.Username, "err", err)
